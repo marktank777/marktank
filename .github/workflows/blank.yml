@@ -27,6 +27,6 @@ jobs:
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "Passw0rd!" -Force)
     - name: Create Parallel Tunnels
       run: |
-        Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3389 }
-        Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3390 }
-        Wait-Job
+        $job1 = Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3389 }
+        $job2 = Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3390 }
+        Wait-Job -Id $job1.Id, $job2.Id
