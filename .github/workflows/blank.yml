@@ -3,37 +3,29 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Download ngrok
+    - name: Download
       run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-
-    - name: Extract ngrok
+    - name: Extract
       run: Expand-Archive ngrok.zip
-
-    # Authenticate and create the first ngrok tunnel
-    - name: Auth and Create Tunnel 1
-      run: |
-        .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN_1
-        Start-Process -NoNewWindow -FilePath .\ngrok\ngrok.exe -ArgumentList "tcp 3389"
+    - name: Auth 1
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN_1
       env:
         NGROK_AUTH_TOKEN_1: ${{ secrets.NGROK_AUTH_TOKEN_1 }}
-
-    # Authenticate and create the second ngrok tunnel
-    - name: Auth and Create Tunnel 2
-      run: |
-        .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN_2
-        Start-Process -NoNewWindow -FilePath .\ngrok\ngrok.exe -ArgumentList "tcp 3390"
+    - name: Auth 2
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN_2
       env:
         NGROK_AUTH_TOKEN_2: ${{ secrets.NGROK_AUTH_TOKEN_2 }}
-
-    # Additional steps to configure Windows for RDP
+    - name: Update
+      run: .\ngrok\ngrok.exe update
+    - name: Version
+      run: .\ngrok\ngrok.exe --version
     - name: Enable TS
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
-
+      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-
-    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-
+    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "Passw0rd!" -Force)
-    
+    - name: Create Tunnel 1
+      run: Start-Process -FilePath ".\ngrok\ngrok.exe" -ArgumentList "tcp 3389" -NoNewWindow
+    - name: Create Tunnel 2
+      run: .\ngrok\ngrok.exe tcp 3390
