@@ -27,4 +27,3 @@ jobs:
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "Passw0rd!" -Force)
     - name: Create Parallel Tunnels
       run: Start-Process powershell -ArgumentList '-c "& {.\ngrok\ngrok.exe tcp 3389; .\ngrok\ngrok.exe tcp 3390}"'
-      Get-Job | Wait-Job
