@@ -26,5 +26,7 @@ jobs:
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "Passw0rd!" -Force)
     - name: Create Parallel Tunnels
-      run: Start-Process powershell -ArgumentList '-c "& {.\ngrok\ngrok.exe tcp 3389; .\ngrok\ngrok.exe tcp 3390}"'
-      Wait-Job
+      run: |
+        Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3389 } | Out-Null
+        Start-Job -ScriptBlock { & .\ngrok\ngrok.exe tcp 3390 } | Out-Null
+        Get-Job | Wait-Job
